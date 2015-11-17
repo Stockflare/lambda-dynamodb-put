@@ -4,7 +4,7 @@ var _ = require('underscore');
 var When = require('when');
 
 exports.handler = function(event, context) {
-  // console.log(JSON.stringify(event, null, 2));
+  console.log(JSON.stringify(event, null, 2));
 
   var promises = event.Records.map(function(record){
     return When.promise(function(resolve, reject, notify) {
@@ -30,8 +30,10 @@ exports.handler = function(event, context) {
 
 
   When.all(promises).done(function(records) {
+    console.log("Successfully processed " + event.Records.length + " records.");
     context.succeed("Successfully processed " + event.Records.length + " records.");
   }, function(reason) {
+    console.log("Failed to process records " + reason);
     context.fail("Failed to process records " + reason);
   });
 
