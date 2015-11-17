@@ -6,9 +6,10 @@ var When = require('when');
 exports.handler = function(event, context) {
   console.log(JSON.stringify(event, null, 2));
 
+  // Create promises for each record that m,ust be processed
   var promises = event.Records.map(function(record){
     return When.promise(function(resolve, reject, notify) {
-      // base64 decode, convert to ascii and JSON parse this kinesis record's payload
+      // base64 decode, convert to utf8 and JSON parse this kinesis record's payload
       var text = new Buffer(record.kinesis.data, 'base64').toString('utf8');
       // console.log(text);
       var payload = JSON.parse(text);
