@@ -2,9 +2,25 @@
 var AWS = require('aws-sdk');
 var _ = require('underscore');
 var When = require('when');
+var async = require('async');
 
 exports.handler = function(event, context) {
   console.log(JSON.stringify(event, null, 2));
+
+  var saveItem = function(dynamodb, region, payload, callback) {
+    async.retry({times: 20, interval: 1000}, function(db_callback){
+      console.log("trying save in retry block");
+      dynamodb.putItem(payload, function(err, data){
+        if (err) {
+          // console.log(err);
+          db_callback(err, null);
+        } else {
+          db_callback(null, data);
+        }
+      });
+    }, callback);
+
+  };
 
   // Create promises for each record that m,ust be processed
   var promises = event.Records.map(function(record){
@@ -18,7 +34,7 @@ exports.handler = function(event, context) {
 
       // Put the payload into dynamodb
       var dynamodb = new AWS.DynamoDB({region: region});
-      dynamodb.putItem(payload, function(err, data){
+      saveItem(dynamodb, region, payload, function(err, data){
         if (err) {
           console.log(JSON.stringify(err));
           reject(err);
